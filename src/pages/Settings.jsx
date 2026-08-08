@@ -33,7 +33,7 @@ export const Settings = ({ teacherName, setTeacherName }) => {
     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="min-h-full flex flex-col">
       <Header title="Settings" subtitle="App Preferences" />
       
-      <div className="px-6 py-4 space-y-6">
+      <div className="px-6 py-4 space-y-6 flex-1 flex flex-col">
 
         {/* Teacher Profile */}
         <div className="bg-white p-5 rounded-2xl card-shadow border border-gray-50">
@@ -75,7 +75,7 @@ export const Settings = ({ teacherName, setTeacherName }) => {
           </button>
         </div>
 
-        <div className="text-center pt-8">
+        <div className="text-center pt-8 mt-auto pb-6">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Hudoor V2.0</p>
           <p className="text-sm text-gray-500 mt-2">
             Developed by{' '}
