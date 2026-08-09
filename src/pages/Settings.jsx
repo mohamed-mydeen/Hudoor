@@ -4,7 +4,7 @@ import { Header } from '../components/Header';
 import { Download, Trash2, ShieldAlert, User, LogOut } from 'lucide-react';
 import { storage } from '../utils/storage';
 
-export const Settings = ({ teacherName, setTeacherName, onLogout }) => {
+export const Settings = ({ teacherName, setTeacherName, onLogout, goToTab }) => {
 
   const handleWipeData = () => {
     if (window.confirm("Are you absolutely sure you want to wipe ALL classes and attendance data?")) {
@@ -30,8 +30,8 @@ export const Settings = ({ teacherName, setTeacherName, onLogout }) => {
   };
 
   return (
-    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="min-h-full flex flex-col">
-      <Header title="Settings" subtitle="App Preferences" />
+    <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="min-h-full flex flex-col pb-6 bg-gray-50">
+      <Header title="Settings" subtitle="Preferences & Data" onBack={() => goToTab('home')} />
       
       <div className="px-6 py-4 space-y-6 flex-1 flex flex-col">
 

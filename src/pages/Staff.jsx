@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Header } from '../components/Header';
 import { Plus, Trash2 } from 'lucide-react';
 
-export const Staff = ({ staff, setStaff }) => {
+export const Staff = ({ staff, setStaff, currentStaffId, goToTab }) => {
   const [showAddStaff, setShowAddStaff] = useState(false);
   const [newStaffName, setNewStaffName] = useState('');
   const [newStaffRole, setNewStaffRole] = useState('');
@@ -47,7 +47,7 @@ export const Staff = ({ staff, setStaff }) => {
 
   return (
     <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="min-h-full flex flex-col">
-      <Header title="Staff Members" subtitle="Manage Team" />
+      <Header title="Staff Members" subtitle="Manage Team" onBack={() => goToTab('home')} />
       
       <div className="px-6 py-4">
         {showAddStaff ? (

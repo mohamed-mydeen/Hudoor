@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Header } from '../components/Header';
 import { Plus, ChevronRight, ArrowLeft, Users, Trash2, X } from 'lucide-react';
 
-export const Classes = ({ classes, setClasses, students, setStudents, customFields = [], setCustomFields, currentStaffId }) => {
+export const Classes = ({ classes, setClasses, students, setStudents, customFields = [], setCustomFields, currentStaffId, goToTab }) => {
   const [selectedClass, setSelectedClass] = useState(null);
   
   // New Class Form
@@ -190,7 +190,7 @@ export const Classes = ({ classes, setClasses, students, setStudents, customFiel
   // ----- VIEW: CLASS LIST -----
   return (
     <motion.div key="classes-list" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="min-h-full flex flex-col">
-      <Header title="Classes" subtitle="Your Batches" />
+      <Header title="Classes" subtitle="Your Batches" onBack={() => goToTab('home')} />
       
       <div className="px-6 py-4">
         {showAddClass ? (

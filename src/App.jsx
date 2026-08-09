@@ -185,7 +185,7 @@ function App() {
                   currentStaffId={currentStaffId}
                />;
       case 'staff':
-        return <Staff key="staff" staff={staff} setStaff={saveAndSetStaff} currentStaffId={currentStaffId} />;
+        return <Staff key="staff" staff={staff} setStaff={saveAndSetStaff} currentStaffId={currentStaffId} goToTab={setActiveTab} />;
       case 'classes':
         return <Classes 
                   key="classes"
@@ -202,6 +202,7 @@ function App() {
                   customFields={customFields} 
                   setCustomFields={saveAndSetCustomFields} 
                   currentStaffId={currentStaffId}
+                  goToTab={setActiveTab}
                />;
       case 'attendance':
       case 'student-attendance':
@@ -236,6 +237,7 @@ function App() {
                   teacherName={currentStaffProfile?.name || teacherName} 
                   setTeacherName={saveAndSetTeacherName} 
                   onLogout={handleLogout}
+                  goToTab={setActiveTab}
                />;
       default:
         return null;

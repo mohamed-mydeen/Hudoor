@@ -148,20 +148,11 @@ export const StudentManagement = ({ students, setStudents, classes, customFields
   // ======== SUB-RENDERERS ========
 
   const renderHeader = (title, showBackToList = false) => (
-    <div className="bg-white px-6 pt-10 pb-4 sticky top-0 z-40 bg-opacity-95 backdrop-blur-md shadow-sm">
-      <div className="flex items-center gap-4">
-        <button 
-          onClick={() => showBackToList ? setCurrentView('list') : goToTab('home')}
-          className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors shrink-0"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <div>
-          <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight leading-none mb-1">{title}</h1>
-          {!showBackToList && <p className="text-sm font-semibold text-gray-400">{students.length} Students</p>}
-        </div>
-      </div>
-    </div>
+    <Header 
+      title={title} 
+      subtitle={!showBackToList ? `${students.length} Students` : undefined}
+      onBack={showBackToList ? () => setCurrentView('list') : () => goToTab('home')}
+    />
   );
 
   const renderList = () => (
