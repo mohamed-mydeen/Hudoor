@@ -1,10 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Header } from '../components/Header';
-import { Download, Trash2, ShieldAlert, User } from 'lucide-react';
+import { Download, Trash2, ShieldAlert, User, LogOut } from 'lucide-react';
 import { storage } from '../utils/storage';
 
-export const Settings = ({ teacherName, setTeacherName }) => {
+export const Settings = ({ teacherName, setTeacherName, onLogout }) => {
 
   const handleWipeData = () => {
     if (window.confirm("Are you absolutely sure you want to wipe ALL classes and attendance data?")) {
@@ -38,17 +38,16 @@ export const Settings = ({ teacherName, setTeacherName }) => {
         {/* Teacher Profile */}
         <div className="bg-white p-5 rounded-2xl card-shadow border border-gray-50">
           <h3 className="font-bold text-gray-900 mb-1 flex items-center gap-2">
-            <User size={18} className="text-blue-500" /> Your Profile
+            <User size={18} className="text-blue-500" /> Current Profile
           </h3>
-          <p className="text-sm text-gray-500 mb-4">Set your name to personalize the dashboard.</p>
+          <p className="text-sm font-bold text-gray-800 text-lg mb-4">{teacherName || 'Unknown Staff'}</p>
           
-          <input 
-            type="text" 
-            placeholder="e.g. Ustad Ahmad" 
-            value={teacherName}
-            onChange={(e) => setTeacherName(e.target.value)}
-            className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          <button 
+            onClick={onLogout}
+            className="w-full py-3 bg-gray-50 text-gray-600 font-bold rounded-xl flex items-center justify-center gap-2 border border-gray-100 hover:bg-gray-100 transition-colors"
+          >
+            <LogOut size={20} /> Switch Profile / Logout
+          </button>
         </div>
         
         <div className="bg-white p-5 rounded-2xl card-shadow border border-gray-50">

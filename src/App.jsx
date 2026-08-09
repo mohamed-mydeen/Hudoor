@@ -4,11 +4,14 @@ import { BottomNav } from './components/BottomNav';
 import { Splash } from './components/Splash';
 import { storage } from './utils/storage';
 
-// Placeholder Pages
+// Pages
 import { Home } from './pages/Home';
 import { Classes } from './pages/Classes';
 import { Attendance } from './pages/Attendance';
 import { Settings } from './pages/Settings';
+import { Staff } from './pages/Staff';
+import { StudentManagement } from './pages/StudentManagement';
+import { LoginScreen } from './pages/LoginScreen';
 
 function App() {
   const [activeTab, setActiveTab] = useState('home');
@@ -19,16 +22,31 @@ function App() {
   const [attendance, setAttendance] = useState({});
   const [customFields, setCustomFields] = useState([]);
   const [teacherName, setTeacherName] = useState('');
+  const [staff, setStaff] = useState([]);
+  const [staffAttendance, setStaffAttendance] = useState({});
+  const [currentStaffId, setCurrentStaffId] = useState(null);
   const [isDbLoaded, setIsDbLoaded] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
-      const [dbClasses, dbStudents, dbAttendance, dbCustomFields, dbTeacherName] = await Promise.all([
+      const [
+        dbClasses, 
+        dbStudents, 
+        dbAttendance, 
+        dbCustomFields, 
+        dbTeacherName, 
+        dbStaff, 
+        dbStaffAttendance,
+        dbCurrentStaffId
+      ] = await Promise.all([
         storage.getClasses(),
         storage.getStudents(),
         storage.getAttendance(),
         storage.getCustomFields(),
-        storage.getTeacherName()
+        storage.getTeacherName(),
+        storage.getStaff(),
+        storage.getStaffAttendance(),
+        storage.getCurrentStaffId()
       ]);
       
       setClasses(dbClasses);
@@ -36,6 +54,9 @@ function App() {
       setAttendance(dbAttendance);
       setCustomFields(dbCustomFields);
       setTeacherName(dbTeacherName);
+      setStaff(dbStaff);
+      setStaffAttendance(dbStaffAttendance);
+      setCurrentStaffId(dbCurrentStaffId);
       setIsDbLoaded(true);
     };
 
@@ -67,19 +88,34 @@ function App() {
     storage.saveTeacherName(name);
   };
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'home':
-        return <Home classes={classes} students={students} attendance={attendance} goToTab={setActiveTab} teacherName={teacherName} />;
-      case 'classes':
-        return <Classes classes={classes} setClasses={saveAndSetClasses} students={students} setStudents={saveAndSetStudents} customFields={customFields} setCustomFields={saveAndSetCustomFields} />;
-      case 'attendance':
-        return <Attendance classes={classes} students={students} attendance={attendance} setAttendance={saveAndSetAttendance} />;
-      case 'settings':
-        return <Settings teacherName={teacherName} setTeacherName={saveAndSetTeacherName} />;
-      default:
-        return null;
+  const saveAndSetStaff = (newStaff) => {
+    setStaff(newStaff);
+    storage.saveStaff(newStaff);
+  };
+
+  const saveAndSetStaffAttendance = (newAtt) => {
+    setStaffAttendance(newAtt);
+    storage.saveStaffAttendance(newAtt);
+  };
+
+  const handleSelectStaff = (id, password) => {
+    if (id === 'admin_setup') {
+      // Special logic for first time setup
+      const adminId = Date.now().toString();
+      const newAdmin = { id: adminId, name: 'Admin', role: 'admin', password: password };
+      saveAndSetStaff([newAdmin]);
+      setCurrentStaffId(adminId);
+      storage.saveCurrentStaffId(adminId);
+      return;
     }
+    setCurrentStaffId(id);
+    storage.saveCurrentStaffId(id);
+  };
+
+  const handleLogout = () => {
+    setCurrentStaffId(null);
+    storage.saveCurrentStaffId(null);
+    setActiveTab('home'); // reset tab on logout
   };
 
   // Wait for both the 3-second splash animation and the database to load
@@ -91,6 +127,115 @@ function App() {
     );
   }
 
+  const handleCreateStaff = (newStaffData) => {
+    const newStaffId = Date.now().toString();
+    const newStaff = {
+      id: newStaffId,
+      ...newStaffData
+    };
+    saveAndSetStaff([...staff, newStaff]);
+    setCurrentStaffId(newStaffId);
+    storage.saveCurrentStaffId(newStaffId);
+  };
+
+  // If DB is loaded and no staff is selected, show Login Screen
+  if (isDbLoaded && !currentStaffId) {
+    return <LoginScreen staff={staff} onSelectStaff={handleSelectStaff} onCreateStaff={handleCreateStaff} />;
+  }
+
+  // Helper to get current staff details
+  const currentStaffProfile = staff.find(s => s.id === currentStaffId);
+  const isAdmin = currentStaffProfile?.role?.toLowerCase() === 'admin';
+
+  // Filter data to only show for current staff
+  const staffClasses = classes.filter(c => c.staffId === currentStaffId);
+  const staffStudents = students.filter(s => s.staffId === currentStaffId);
+
+  // We should also scope custom fields to the staff, or keep them global.
+  // The plan said "keep them global", so we don't filter customFields.
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'home':
+        return <Home 
+                  classes={staffClasses} 
+                  students={staffStudents} 
+                  attendance={attendance} 
+                  staff={staff} 
+                  staffAttendance={staffAttendance} 
+                  goToTab={setActiveTab} 
+                  teacherName={currentStaffProfile?.name || teacherName}
+                  isAdmin={isAdmin} 
+               />;
+      case 'student-management':
+        return <StudentManagement 
+                  students={staffStudents} 
+                  setStudents={(updatedStaffStudents) => {
+                    // updatedStaffStudents contains only this staff's students.
+                    // We must merge them back into the global students list.
+                    const otherStudents = students.filter(s => s.staffId !== currentStaffId);
+                    saveAndSetStudents([...otherStudents, ...updatedStaffStudents]);
+                  }} 
+                  classes={staffClasses} 
+                  customFields={customFields} 
+                  setCustomFields={saveAndSetCustomFields} 
+                  goToTab={setActiveTab} 
+                  currentStaffId={currentStaffId}
+               />;
+      case 'staff':
+        return <Staff staff={staff} setStaff={saveAndSetStaff} currentStaffId={currentStaffId} />;
+      case 'classes':
+        return <Classes 
+                  classes={staffClasses} 
+                  setClasses={(updatedStaffClasses) => {
+                    const otherClasses = classes.filter(c => c.staffId !== currentStaffId);
+                    saveAndSetClasses([...otherClasses, ...updatedStaffClasses]);
+                  }} 
+                  students={staffStudents} 
+                  setStudents={(updatedStaffStudents) => {
+                    const otherStudents = students.filter(s => s.staffId !== currentStaffId);
+                    saveAndSetStudents([...otherStudents, ...updatedStaffStudents]);
+                  }} 
+                  customFields={customFields} 
+                  setCustomFields={saveAndSetCustomFields} 
+                  currentStaffId={currentStaffId}
+               />;
+      case 'attendance':
+      case 'student-attendance':
+        return <Attendance 
+                  mode="students"
+                  classes={staffClasses} 
+                  students={staffStudents} 
+                  attendance={attendance} 
+                  setAttendance={saveAndSetAttendance} 
+                  staff={staff} 
+                  staffAttendance={staffAttendance} 
+                  setStaffAttendance={saveAndSetStaffAttendance} 
+                  goToTab={setActiveTab}
+               />;
+      case 'staff-attendance':
+        return <Attendance 
+                  mode="staff"
+                  classes={staffClasses} 
+                  students={staffStudents} 
+                  attendance={attendance} 
+                  setAttendance={saveAndSetAttendance} 
+                  staff={staff} 
+                  staffAttendance={staffAttendance} 
+                  setStaffAttendance={saveAndSetStaffAttendance} 
+                  goToTab={setActiveTab}
+               />;
+      case 'settings':
+        return <Settings 
+                  teacherName={currentStaffProfile?.name || teacherName} 
+                  setTeacherName={saveAndSetTeacherName} 
+                  onLogout={handleLogout}
+               />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <>
       <main className="flex-1 overflow-y-auto relative w-full no-scrollbar pb-24">
@@ -98,7 +243,7 @@ function App() {
           {renderContent()}
         </AnimatePresence>
       </main>
-      <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
+      <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} isAdmin={isAdmin} />
     </>
   );
 }

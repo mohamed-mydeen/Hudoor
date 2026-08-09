@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Header } from '../components/Header';
 import { Plus, ChevronRight, ArrowLeft, Users, Trash2, X } from 'lucide-react';
 
-export const Classes = ({ classes, setClasses, students, setStudents, customFields = [], setCustomFields }) => {
+export const Classes = ({ classes, setClasses, students, setStudents, customFields = [], setCustomFields, currentStaffId }) => {
   const [selectedClass, setSelectedClass] = useState(null);
   
   // New Class Form
@@ -22,7 +22,11 @@ export const Classes = ({ classes, setClasses, students, setStudents, customFiel
   const handleAddClass = (e) => {
     e.preventDefault();
     if (!newClassName.trim()) return;
-    const newClass = { id: Date.now().toString(), name: newClassName.trim() };
+    const newClass = { 
+      id: Date.now().toString(), 
+      name: newClassName.trim(),
+      staffId: currentStaffId
+    };
     setClasses([...classes, newClass]);
     setNewClassName('');
     setShowAddClass(false);
@@ -36,6 +40,7 @@ export const Classes = ({ classes, setClasses, students, setStudents, customFiel
       classId: selectedClass.id,
       name: newStudentName.trim(),
       rollNo: newStudentRoll.trim(),
+      staffId: currentStaffId,
       ...newStudentCustom
     };
     setStudents([...students, newStudent]);
