@@ -65,7 +65,7 @@ export const LoginScreen = ({ staff, onSelectStaff, onCreateStaff }) => {
   const selectedStaffInfo = staff.find(s => s.id === selectedStaffId);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+    <div className="fixed inset-0 bg-gray-50 flex flex-col items-center justify-center p-6 overflow-hidden z-50">
       
       {/* Decorative Background Elements */}
       <div className="absolute top-0 left-0 w-full h-1/3 bg-gradient-to-b from-blue-100/50 to-transparent"></div>

@@ -60,7 +60,7 @@ export const Staff = ({ staff, setStaff }) => {
                 value={newStaffName} onChange={e => setNewStaffName(e.target.value)}
               />
               <input 
-                type="text" placeholder="Role (e.g. Math Teacher)"
+                type="text" placeholder="Role (e.g. Teacher)"
                 className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={newStaffRole} onChange={e => setNewStaffRole(e.target.value)}
               />

@@ -79,7 +79,7 @@ export const Classes = ({ classes, setClasses, students, setStudents, customFiel
     const classStudents = students.filter(s => s.classId === selectedClass.id);
     
     return (
-      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="min-h-full flex flex-col">
+      <motion.div key="list" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="min-h-full flex flex-col">
         <Header 
           title={selectedClass.name} 
           subtitle="Manage Students"
@@ -113,7 +113,7 @@ export const Classes = ({ classes, setClasses, students, setStudents, customFiel
                 {customFields.map(field => (
                   <div key={field.id} className="relative">
                     <input 
-                      type="text" placeholder={`${field.label} (Optional)`}
+                      type="text"
                       className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={newStudentCustom[field.id] || ''} 
                       onChange={e => setNewStudentCustom({ ...newStudentCustom, [field.id]: e.target.value })}
@@ -131,7 +131,7 @@ export const Classes = ({ classes, setClasses, students, setStudents, customFiel
                 {isAddingField ? (
                   <div className="flex gap-2">
                     <input 
-                      type="text" placeholder="Field Name (e.g. Phone)" autoFocus
+                      type="text" autoFocus
                       className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
                       value={newFieldLabel} onChange={e => setNewFieldLabel(e.target.value)}
                     />
@@ -189,7 +189,7 @@ export const Classes = ({ classes, setClasses, students, setStudents, customFiel
 
   // ----- VIEW: CLASS LIST -----
   return (
-    <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="min-h-full flex flex-col">
+    <motion.div key="classes-list" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="min-h-full flex flex-col">
       <Header title="Classes" subtitle="Your Batches" />
       
       <div className="px-6 py-4">

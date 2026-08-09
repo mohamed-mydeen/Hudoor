@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Search, Plus, Trash2, Edit2, Eye, User, Users, Phone, X, Save } from 'lucide-react';
+import { ArrowLeft, Search, Plus, Trash2, Edit2, Eye, User, Users, Phone, X, Save, Download } from 'lucide-react';
 import { Header } from '../components/Header';
 
 export const StudentManagement = ({ students, setStudents, classes, customFields, setCustomFields, goToTab, currentStaffId }) => {
@@ -27,6 +27,38 @@ export const StudentManagement = ({ students, setStudents, classes, customFields
       );
     });
   }, [students, searchQuery]);
+
+  // Export to CSV
+  const handleExportCSV = () => {
+    if (students.length === 0) {
+      alert("No students to export");
+      return;
+    }
+
+    const headers = ['Name', 'Phone', 'Age', 'Register Number', ...customFields.map(cf => cf.label)];
+    const csvRows = [headers.join(',')];
+
+    students.forEach(student => {
+      const row = [
+        student.name || '',
+        student.phone || '',
+        student.age || '',
+        student.registerNumber || '',
+        ...customFields.map(cf => student[cf.id] || '')
+      ].map(value => `"${String(value).replace(/"/g, '""')}"`);
+      csvRows.push(row.join(','));
+    });
+
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.setAttribute('hidden', '');
+    a.setAttribute('href', url);
+    a.setAttribute('download', 'students_data.csv');
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
 
   // Handle Form Input
   const handleInputChange = (fieldId, value) => {
@@ -133,7 +165,7 @@ export const StudentManagement = ({ students, setStudents, classes, customFields
   );
 
   const renderList = () => (
-    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex-1 flex flex-col pb-24">
+    <motion.div key="list" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex-1 flex flex-col pb-24">
       {renderHeader("Student Management System")}
       
       <div className="px-6 py-4 space-y-6">
@@ -142,7 +174,7 @@ export const StudentManagement = ({ students, setStudents, classes, customFields
           <div className="flex-1 relative">
             <input 
               type="text" 
-              placeholder="Search students..." 
+              placeholder="Search by name or ID..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               className="w-full bg-gray-50 text-gray-900 border border-gray-100 rounded-2xl pl-12 pr-4 py-3.5 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -151,17 +183,25 @@ export const StudentManagement = ({ students, setStudents, classes, customFields
           </div>
         </div>
         
-        <button 
-          onClick={openAdd}
-          className="w-full bg-blue-600 text-white font-bold rounded-2xl py-4 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30 active:scale-[0.98] transition-transform"
-        >
-          <Plus size={20} /> Add Student
-        </button>
+        <div className="flex gap-3">
+          <button 
+            onClick={openAdd}
+            className="flex-[2] bg-blue-600 text-white font-bold rounded-2xl py-4 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30 active:scale-[0.98] transition-transform"
+          >
+            <Plus size={20} /> Add Student
+          </button>
+          <button 
+            onClick={handleExportCSV}
+            className="flex-1 bg-green-50 text-green-600 font-bold rounded-2xl py-4 flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+          >
+            <Download size={20} /> Export
+          </button>
+        </div>
 
         {/* List */}
-        <div className="space-y-4">
+        <div className="bg-white rounded-2xl border border-gray-100 card-shadow overflow-hidden">
           {students.length === 0 ? (
-            <div className="text-center py-16 bg-gray-50 rounded-3xl border border-gray-100 border-dashed">
+            <div className="text-center py-16 bg-gray-50 border-dashed">
               <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-gray-300 mx-auto mb-4 card-shadow">
                 <Users size={32} />
               </div>
@@ -173,23 +213,42 @@ export const StudentManagement = ({ students, setStudents, classes, customFields
           ) : filteredStudents.length === 0 ? (
             <div className="text-center py-10 text-gray-500 font-medium">No students found</div>
           ) : (
-            filteredStudents.map(student => (
-              <div key={student.id} className="bg-white p-5 rounded-2xl card-shadow border border-gray-50">
-                <h3 className="font-bold text-gray-900 text-lg mb-3">{student.name}</h3>
-                
-                <div className="space-y-1.5 mb-5">
-                  {student.phone && <p className="text-sm font-semibold text-gray-500 flex items-center gap-2"><Phone size={14}/> {student.phone}</p>}
-                  {student.age && <p className="text-sm font-semibold text-gray-500">Age: {student.age}</p>}
-                  {student.registerNumber && <p className="text-sm font-semibold text-gray-500">Reg No: {student.registerNumber}</p>}
-                </div>
-                
-                <div className="flex gap-2">
-                  <button onClick={() => openView(student)} className="flex-1 py-2 bg-blue-50 text-blue-600 rounded-xl font-bold text-sm flex items-center justify-center gap-1"><Eye size={16}/> View</button>
-                  <button onClick={() => openEdit(student)} className="flex-1 py-2 bg-orange-50 text-orange-600 rounded-xl font-bold text-sm flex items-center justify-center gap-1"><Edit2 size={16}/> Edit</button>
-                  <button onClick={() => handleDelete(student.id)} className="flex-1 py-2 bg-red-50 text-red-600 rounded-xl font-bold text-sm flex items-center justify-center gap-1"><Trash2 size={16}/> Delete</button>
-                </div>
-              </div>
-            ))
+            <div className="overflow-x-auto no-scrollbar">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider font-bold">
+                    <th className="p-4 whitespace-nowrap min-w-[150px]">Name</th>
+                    <th className="p-4 whitespace-nowrap min-w-[120px]">Phone</th>
+                    <th className="p-4 whitespace-nowrap min-w-[80px]">Age</th>
+                    <th className="p-4 whitespace-nowrap min-w-[120px]">Register No</th>
+                    {customFields.map(cf => (
+                      <th key={cf.id} className="p-4 whitespace-nowrap min-w-[120px]">{cf.label}</th>
+                    ))}
+                    <th className="p-4 whitespace-nowrap min-w-[140px] sticky right-0 bg-gray-50 shadow-[-10px_0_15px_-3px_rgba(0,0,0,0.05)] text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {filteredStudents.map(student => (
+                    <tr key={student.id} className="hover:bg-gray-50/50 transition-colors group">
+                      <td className="p-4 font-bold text-gray-900 whitespace-nowrap">{student.name}</td>
+                      <td className="p-4 text-gray-600 font-medium whitespace-nowrap">{student.phone || '-'}</td>
+                      <td className="p-4 text-gray-600 font-medium whitespace-nowrap">{student.age || '-'}</td>
+                      <td className="p-4 text-gray-600 font-medium whitespace-nowrap">{student.registerNumber || '-'}</td>
+                      {customFields.map(cf => (
+                        <td key={cf.id} className="p-4 text-gray-600 font-medium whitespace-nowrap">{student[cf.id] || '-'}</td>
+                      ))}
+                      <td className="p-3 whitespace-nowrap sticky right-0 bg-white shadow-[-10px_0_15px_-3px_rgba(0,0,0,0.05)] group-hover:bg-gray-50/50 transition-colors">
+                        <div className="flex gap-2 justify-center">
+                          <button onClick={() => openView(student)} className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"><Eye size={16}/></button>
+                          <button onClick={() => openEdit(student)} className="p-2 bg-orange-50 text-orange-600 rounded-lg hover:bg-orange-100 transition-colors"><Edit2 size={16}/></button>
+                          <button onClick={() => handleDelete(student.id)} className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"><Trash2 size={16}/></button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>
@@ -197,7 +256,7 @@ export const StudentManagement = ({ students, setStudents, classes, customFields
   );
 
   const renderForm = () => (
-    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex-1 flex flex-col pb-24">
+    <motion.div key="form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex-1 flex flex-col pb-24">
       {renderHeader(currentView === 'add' ? "Add Student" : "Edit Student", true)}
       
       <div className="px-6 py-4">
@@ -208,23 +267,23 @@ export const StudentManagement = ({ students, setStudents, classes, customFields
             
             <div>
               <label className="block text-xs font-bold text-gray-400 mb-1">Full Name</label>
-              <input type="text" required value={formData.name || ''} onChange={e => handleInputChange('name', e.target.value)} className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. Mohamed Mydeen" />
+              <input type="text" placeholder="e.g. Mohamed Mydeen" required value={formData.name || ''} onChange={e => handleInputChange('name', e.target.value)} className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-bold text-gray-400 mb-1">Phone Number</label>
-                <input type="tel" value={formData.phone || ''} onChange={e => handleInputChange('phone', e.target.value)} className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="9876543210" />
+                <input type="tel" placeholder="9876543210" value={formData.phone || ''} onChange={e => handleInputChange('phone', e.target.value)} className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-400 mb-1">Age</label>
-                <input type="number" value={formData.age || ''} onChange={e => handleInputChange('age', e.target.value)} className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="21" />
+                <input type="number" placeholder="21" value={formData.age || ''} onChange={e => handleInputChange('age', e.target.value)} className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
             </div>
 
             <div>
               <label className="block text-xs font-bold text-gray-400 mb-1">Register Number</label>
-              <input type="text" value={formData.registerNumber || ''} onChange={e => handleInputChange('registerNumber', e.target.value)} className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="23CS001" />
+              <input type="text" placeholder="e.g. 23CS001" value={formData.registerNumber || ''} onChange={e => handleInputChange('registerNumber', e.target.value)} className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
 
             {/* Optional Class Assignment */}
@@ -250,7 +309,6 @@ export const StudentManagement = ({ students, setStudents, classes, customFields
                   value={formData[field.id] || ''} 
                   onChange={e => handleInputChange(field.id, e.target.value)} 
                   className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                  placeholder={`Enter ${field.label}`} 
                 />
                 <button type="button" onClick={() => handleDeleteCustomField(field.id)} className="absolute right-0 top-0 text-gray-300 hover:text-red-500 p-1">
                   <X size={14}/>
@@ -261,7 +319,7 @@ export const StudentManagement = ({ students, setStudents, classes, customFields
             {isAddingField ? (
               <div className="flex gap-2 mt-4 p-3 bg-blue-50 rounded-xl border border-blue-100">
                 <input 
-                  type="text" placeholder="Field Name (e.g. Department)" autoFocus
+                  type="text" placeholder="e.g. Department" autoFocus
                   className="flex-1 bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none focus:border-blue-500"
                   value={newFieldLabel} onChange={e => setNewFieldLabel(e.target.value)}
                 />
@@ -305,7 +363,7 @@ export const StudentManagement = ({ students, setStudents, classes, customFields
     }
 
     return (
-      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex-1 flex flex-col pb-24">
+      <motion.div key="view" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex-1 flex flex-col pb-24">
         {renderHeader("Student Details", true)}
         
         <div className="px-6 py-4 space-y-6">

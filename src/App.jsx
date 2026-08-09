@@ -158,6 +158,7 @@ function App() {
     switch (activeTab) {
       case 'home':
         return <Home 
+                  key="home"
                   classes={staffClasses} 
                   students={staffStudents} 
                   attendance={attendance} 
@@ -169,6 +170,7 @@ function App() {
                />;
       case 'student-management':
         return <StudentManagement 
+                  key="student-management"
                   students={staffStudents} 
                   setStudents={(updatedStaffStudents) => {
                     // updatedStaffStudents contains only this staff's students.
@@ -183,9 +185,10 @@ function App() {
                   currentStaffId={currentStaffId}
                />;
       case 'staff':
-        return <Staff staff={staff} setStaff={saveAndSetStaff} currentStaffId={currentStaffId} />;
+        return <Staff key="staff" staff={staff} setStaff={saveAndSetStaff} currentStaffId={currentStaffId} />;
       case 'classes':
         return <Classes 
+                  key="classes"
                   classes={staffClasses} 
                   setClasses={(updatedStaffClasses) => {
                     const otherClasses = classes.filter(c => c.staffId !== currentStaffId);
@@ -203,6 +206,7 @@ function App() {
       case 'attendance':
       case 'student-attendance':
         return <Attendance 
+                  key="student-attendance"
                   mode="students"
                   classes={staffClasses} 
                   students={staffStudents} 
@@ -215,6 +219,7 @@ function App() {
                />;
       case 'staff-attendance':
         return <Attendance 
+                  key="staff-attendance"
                   mode="staff"
                   classes={staffClasses} 
                   students={staffStudents} 
@@ -227,6 +232,7 @@ function App() {
                />;
       case 'settings':
         return <Settings 
+                  key="settings"
                   teacherName={currentStaffProfile?.name || teacherName} 
                   setTeacherName={saveAndSetTeacherName} 
                   onLogout={handleLogout}
@@ -237,14 +243,14 @@ function App() {
   };
 
   return (
-    <>
+    <div className="fixed inset-0 flex flex-col bg-gray-50">
       <main className="flex-1 overflow-y-auto relative w-full no-scrollbar pb-24">
         <AnimatePresence mode="wait">
           {renderContent()}
         </AnimatePresence>
       </main>
       <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} isAdmin={isAdmin} />
-    </>
+    </div>
   );
 }
 

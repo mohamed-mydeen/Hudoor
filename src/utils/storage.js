@@ -1,117 +1,74 @@
-import localforage from 'localforage';
+import { db } from '../firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
-const KEYS = {
-  CLASSES: 'app_classes', // [{ id, name, description, staffId }]
-  STUDENTS: 'app_students', // [{ id, classId, name, rollNo, staffId, ...customData }]
-  ATTENDANCE: 'app_attendance', // { classId: { date: { studentId: 'Present' | 'Absent' } } }
-  CUSTOM_FIELDS: 'app_custom_fields', // [{ id, label, type }]
-  TEACHER_NAME: 'app_teacher_name', // string
-  STAFF: 'app_staff', // [{ id, name, role }]
-  STAFF_ATTENDANCE: 'app_staff_attendance', // { date: { staffId: 'Present' | 'Absent' } }
-  CURRENT_STAFF_ID: 'app_current_staff_id', // string
+// Helper to get from firestore
+const getCloudItem = async (key, defaultVal) => {
+  try {
+    const docRef = doc(db, 'hudoor_data', key);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return docSnap.data().value;
+    }
+    return defaultVal;
+  } catch (error) {
+    console.error(`Error getting ${key} from Firestore:`, error);
+    return defaultVal;
+  }
 };
 
-// Configure localforage to use IndexedDB
-localforage.config({
-  name: 'Hudoor',
-  storeName: 'madrasa_store',
-  description: 'Offline database for Hudoor Madrasa App'
-});
+// Helper to set to firestore
+const setCloudItem = async (key, value) => {
+  try {
+    const docRef = doc(db, 'hudoor_data', key);
+    await setDoc(docRef, { value });
+  } catch (error) {
+    console.error(`Error setting ${key} in Firestore:`, error);
+  }
+};
 
 export const storage = {
-  getClasses: async () => {
-    try {
-      const data = await localforage.getItem(KEYS.CLASSES);
-      return data || [];
-    } catch { return []; }
-  },
+  getClasses: async () => getCloudItem('app_classes', []),
+  saveClasses: async (classes) => setCloudItem('app_classes', classes),
   
-  saveClasses: async (classes) => {
-    await localforage.setItem(KEYS.CLASSES, classes);
-  },
+  getStudents: async () => getCloudItem('app_students', []),
+  saveStudents: async (students) => setCloudItem('app_students', students),
   
-  getStudents: async () => {
-    try {
-      const data = await localforage.getItem(KEYS.STUDENTS);
-      return data || [];
-    } catch { return []; }
-  },
-  
-  saveStudents: async (students) => {
-    await localforage.setItem(KEYS.STUDENTS, students);
-  },
-  
-  getAttendance: async () => {
-    try {
-      const data = await localforage.getItem(KEYS.ATTENDANCE);
-      return data || {};
-    } catch { return {}; }
-  },
-  
-  saveAttendance: async (records) => {
-    await localforage.setItem(KEYS.ATTENDANCE, records);
-  },
+  getAttendance: async () => getCloudItem('app_attendance', {}),
+  saveAttendance: async (records) => setCloudItem('app_attendance', records),
 
-  getCustomFields: async () => {
-    try {
-      const data = await localforage.getItem(KEYS.CUSTOM_FIELDS);
-      return data || [];
-    } catch { return []; }
-  },
-  
-  saveCustomFields: async (fields) => {
-    await localforage.setItem(KEYS.CUSTOM_FIELDS, fields);
-  },
+  getCustomFields: async () => getCloudItem('app_custom_fields', []),
+  saveCustomFields: async (fields) => setCloudItem('app_custom_fields', fields),
 
-  getTeacherName: async () => {
-    try {
-      const data = await localforage.getItem(KEYS.TEACHER_NAME);
-      return data || '';
-    } catch { return ''; }
-  },
-  
-  saveTeacherName: async (name) => {
-    await localforage.setItem(KEYS.TEACHER_NAME, name);
-  },
+  getTeacherName: async () => getCloudItem('app_teacher_name', ''),
+  saveTeacherName: async (name) => setCloudItem('app_teacher_name', name),
 
-  getStaff: async () => {
-    try {
-      const data = await localforage.getItem(KEYS.STAFF);
-      return data || [];
-    } catch { return []; }
-  },
-  
-  saveStaff: async (staff) => {
-    await localforage.setItem(KEYS.STAFF, staff);
-  },
+  getStaff: async () => getCloudItem('app_staff', []),
+  saveStaff: async (staff) => setCloudItem('app_staff', staff),
 
-  getStaffAttendance: async () => {
-    try {
-      const data = await localforage.getItem(KEYS.STAFF_ATTENDANCE);
-      return data || {};
-    } catch { return {}; }
-  },
-  
-  saveStaffAttendance: async (records) => {
-    await localforage.setItem(KEYS.STAFF_ATTENDANCE, records);
-  },
+  getStaffAttendance: async () => getCloudItem('app_staff_attendance', {}),
+  saveStaffAttendance: async (records) => setCloudItem('app_staff_attendance', records),
 
   getCurrentStaffId: async () => {
-    try {
-      const data = await localforage.getItem(KEYS.CURRENT_STAFF_ID);
-      return data || null;
-    } catch { return null; }
+    // Current Staff ID is a local session token.
+    return localStorage.getItem('app_current_staff_id');
   },
   
   saveCurrentStaffId: async (id) => {
     if (id === null) {
-      await localforage.removeItem(KEYS.CURRENT_STAFF_ID);
+      localStorage.removeItem('app_current_staff_id');
     } else {
-      await localforage.setItem(KEYS.CURRENT_STAFF_ID, id);
+      localStorage.setItem('app_current_staff_id', id);
     }
   },
 
   clearAllData: async () => {
-    await localforage.clear();
+    await setCloudItem('app_classes', []);
+    await setCloudItem('app_students', []);
+    await setCloudItem('app_attendance', {});
+    await setCloudItem('app_custom_fields', []);
+    await setCloudItem('app_teacher_name', '');
+    await setCloudItem('app_staff', []);
+    await setCloudItem('app_staff_attendance', {});
+    localStorage.removeItem('app_current_staff_id');
   }
 };
