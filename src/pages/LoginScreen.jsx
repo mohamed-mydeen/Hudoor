@@ -80,15 +80,7 @@ export const LoginScreen = ({ staff, onSelectStaff, onCreateStaff }) => {
         className="w-full max-w-sm bg-white/80 backdrop-blur-xl rounded-3xl p-8 shadow-2xl shadow-gray-200/50 border border-white relative z-10"
       >
         <div className="text-center mb-8">
-          <motion.div 
-            layout
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.1 }}
-            className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-2xl mx-auto flex items-center justify-center mb-5 shadow-lg shadow-blue-500/30 rotate-3"
-          >
-            {viewMode === 'setup' ? <ShieldCheck size={32} /> : viewMode === 'signup' ? <UserPlus size={32} /> : <Activity size={32} />}
-          </motion.div>
+
           <motion.h1 layout className="text-2xl font-extrabold text-gray-900 tracking-tight">
             {viewMode === 'setup' ? 'Setup Admin' : viewMode === 'signup' ? 'Create Profile' : 'Welcome Back'}
           </motion.h1>
