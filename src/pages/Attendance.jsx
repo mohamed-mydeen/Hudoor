@@ -1,12 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Plus, Calendar } from 'lucide-react';
+import { ArrowLeft, Plus, Calendar, Download } from 'lucide-react';
 import { SelectSheet } from '../components/SelectSheet';
 
 export const Attendance = ({ mode, classes, students, attendance, setAttendance, staff = [], staffAttendance = {}, setStaffAttendance, goToTab }) => {
   const [selectedClassId, setSelectedClassId] = useState(classes[0]?.id || '');
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const today = new Date().toISOString().split('T')[0];
+  const d = new Date();
+  const today = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
 
   // ===================== DATA EXTRACTION =====================
   const isStudents = mode === 'students';
@@ -109,6 +110,40 @@ export const Attendance = ({ mode, classes, students, attendance, setAttendance,
     return d.toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
   };
 
+  const handleExportCSV = () => {
+    if (rows.length === 0 || columns.length === 0) {
+      alert("No attendance data to export");
+      return;
+    }
+    
+    const headers = ['Name', ...columns.map(formatDateLabel)];
+    const csvRows = [headers.join(',')];
+    
+    rows.forEach(row => {
+      const rowData = [ `"${(row.name || '').replace(/"/g, '""')}"` ];
+      columns.forEach(date => {
+        let status;
+        if (isStudents) {
+          status = attendance[selectedClassId]?.[date]?.[row.id] || '-';
+        } else {
+          status = staffAttendance[date]?.[row.id] || '-';
+        }
+        rowData.push(`"${status}"`);
+      });
+      csvRows.push(rowData.join(','));
+    });
+    
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.setAttribute('hidden', '');
+    a.setAttribute('href', url);
+    a.setAttribute('download', `${isStudents ? 'student' : 'staff'}_attendance.csv`);
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-h-full flex flex-col bg-gray-50 pb-6">
       
@@ -149,7 +184,13 @@ export const Attendance = ({ mode, classes, students, attendance, setAttendance,
             </div>
           )}
 
-          <div className="relative shrink-0">
+          <div className="flex gap-2 shrink-0 relative">
+            <button 
+              onClick={handleExportCSV}
+              className="bg-green-50 text-green-600 flex items-center gap-2 px-4 py-3.5 rounded-xl font-bold text-sm active:scale-95 transition-transform"
+            >
+              <Download size={16} /> Export
+            </button>
             {showDatePicker ? (
               <input 
                 type="date" 

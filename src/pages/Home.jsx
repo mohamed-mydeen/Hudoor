@@ -6,7 +6,10 @@ import { LineChart, Line, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 export const Home = ({ classes, students, attendance, staff = [], staffAttendance = {}, goToTab, teacherName, isAdmin }) => {
   const [mode, setMode] = useState('students');
-  const today = new Date().toISOString().split('T')[0];
+  const getLocalDateString = (date) => {
+    return new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+  };
+  const today = getLocalDateString(new Date());
 
   // Removed isAdmin check to allow all staff to view staff attendance
 
@@ -21,7 +24,7 @@ export const Home = ({ classes, students, attendance, staff = [], staffAttendanc
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
+      const dateStr = getLocalDateString(d);
       const shortDay = d.toLocaleDateString('en-US', { weekday: 'short' });
       trendData.push({ dateStr, day: shortDay, presents: 0, marked: 0, percentage: 0 });
     }
@@ -84,7 +87,7 @@ export const Home = ({ classes, students, attendance, staff = [], staffAttendanc
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
+      const dateStr = getLocalDateString(d);
       const shortDay = d.toLocaleDateString('en-US', { weekday: 'short' });
       trendData.push({ dateStr, day: shortDay, presents: 0, marked: 0, percentage: 0 });
     }
