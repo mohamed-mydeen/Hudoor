@@ -110,17 +110,34 @@ export const Attendance = ({ mode, classes, students, attendance, setAttendance,
     return d.toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
   };
 
+  const getTotals = (rowId) => {
+    let p = 0; let a = 0;
+    columns.forEach(date => {
+      let status;
+      if (isStudents) status = attendance[selectedClassId]?.[date]?.[rowId];
+      else status = staffAttendance[date]?.[rowId];
+      if (status === 'Present') p++;
+      else if (status === 'Absent') a++;
+    });
+    return { p, a };
+  };
+
   const handleExportCSV = () => {
     if (rows.length === 0 || columns.length === 0) {
       alert("No attendance data to export");
       return;
     }
     
-    const headers = ['Name', ...columns.map(formatDateLabel)];
+    const headers = ['Name', 'Total Present', 'Total Absent', ...columns.map(formatDateLabel)];
     const csvRows = [headers.join(',')];
     
     rows.forEach(row => {
-      const rowData = [ `"${(row.name || '').replace(/"/g, '""')}"` ];
+      const { p, a } = getTotals(row.id);
+      const rowData = [ 
+        `"${(row.name || '').replace(/"/g, '""')}"`,
+        p,
+        a
+      ];
       columns.forEach(date => {
         let status;
         if (isStudents) {
@@ -231,6 +248,12 @@ export const Attendance = ({ mode, classes, students, attendance, setAttendance,
                     <th className="sticky top-0 left-0 z-30 bg-gray-50 border-b border-r border-gray-200 p-3 shadow-[1px_1px_0_0_#e5e7eb] font-extrabold text-gray-500 uppercase tracking-wider text-xs">
                       Name
                     </th>
+                    <th className="sticky top-0 z-20 bg-green-50 border-b border-r border-green-100 p-3 font-extrabold text-green-700 text-center min-w-[70px] uppercase tracking-wider text-xs">
+                      P
+                    </th>
+                    <th className="sticky top-0 z-20 bg-red-50 border-b border-r border-red-100 p-3 font-extrabold text-red-700 text-center min-w-[70px] uppercase tracking-wider text-xs">
+                      A
+                    </th>
                     {columns.map(date => (
                       <th key={date} className="sticky top-0 z-20 bg-gray-50 border-b border-r border-gray-100 p-3 font-extrabold text-gray-600 text-center min-w-[70px]">
                         {formatDateLabel(date)}
@@ -244,6 +267,15 @@ export const Attendance = ({ mode, classes, students, attendance, setAttendance,
                       <td className={`sticky left-0 z-10 bg-white border-r border-gray-200 p-3 font-bold text-gray-800 shadow-[1px_0_0_0_#e5e7eb] max-w-[150px] truncate ${index !== rows.length - 1 ? 'border-b' : ''}`}>
                         {row.name}
                       </td>
+                      {(() => {
+                        const { p, a } = getTotals(row.id);
+                        return (
+                          <>
+                            <td className={`border-r border-gray-100 p-3 text-center font-bold text-green-600 bg-green-50/30 ${index !== rows.length - 1 ? 'border-b' : ''}`}>{p}</td>
+                            <td className={`border-r border-gray-100 p-3 text-center font-bold text-red-600 bg-red-50/30 ${index !== rows.length - 1 ? 'border-b' : ''}`}>{a}</td>
+                          </>
+                        );
+                      })()}
                       {columns.map(date => {
                         let status;
                         if (isStudents) status = attendance[selectedClassId]?.[date]?.[row.id];
