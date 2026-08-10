@@ -76,17 +76,6 @@ export const Settings = ({ teacherName, setTeacherName, onLogout, goToTab }) => 
 
         <div className="text-center pt-8 mt-auto pb-6">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Hudoor V2.0</p>
-          <p className="text-sm text-gray-500 mt-2">
-            Developed by{' '}
-            <a 
-              href="https://mydeen.vercel.app" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-blue-600 font-bold hover:underline"
-            >
-              Mohamed Mydeen
-            </a>
-          </p>
         </div>
       </div>
     </motion.div>

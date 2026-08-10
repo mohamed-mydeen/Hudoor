@@ -45,22 +45,7 @@ export const Splash = ({ onComplete }) => {
         </div>
       </div>
       
-      <motion.div 
-        className="absolute bottom-8 text-white/90 text-sm font-medium tracking-wide z-10 drop-shadow-md"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-      >
-        Developed by{' '}
-        <a 
-          href="https://mydeen.vercel.app" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="text-white font-bold hover:underline"
-        >
-          Mohamed Mydeen
-        </a>
-      </motion.div>
+
     </motion.div>
   );
 };
